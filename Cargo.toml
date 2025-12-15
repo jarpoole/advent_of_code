@@ -1,0 +1,19 @@
+[package]
+name = "advent_of_code"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "2025_1"
+path = "2025/1/main.rs"
+
+[[bin]]
+name = "2025_2"
+path = "2025/2/main.rs"
+
+[[bin]]
+name = "2025_3"
+path = "2025/3/main.rs"
+
+[dependencies]
+reqwest = { version = "0.12.25", features = ["blocking"] }
