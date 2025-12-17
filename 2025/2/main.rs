@@ -79,5 +79,3 @@ fn main() {
         find_invalid_ids(&input, is_invalid_id_part2)
     );
 }
-//mine:    30962646601
-//correct: 30962646823

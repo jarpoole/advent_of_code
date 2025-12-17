@@ -15,5 +15,11 @@ path = "2025/2/main.rs"
 name = "2025_3"
 path = "2025/3/main.rs"
 
+[[bin]]
+name = "2025_4"
+path = "2025/4/main.rs"
+
 [dependencies]
+ndarray = "0.17.1"
+ndarray-conv = "0.6.0"
 reqwest = { version = "0.12.25", features = ["blocking"] }
