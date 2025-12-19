@@ -19,6 +19,10 @@ path = "2025/3/main.rs"
 name = "2025_4"
 path = "2025/4/main.rs"
 
+[[bin]]
+name = "2025_5"
+path = "2025/5/main.rs"
+
 [dependencies]
 ndarray = "0.17.1"
 ndarray-conv = "0.6.0"
