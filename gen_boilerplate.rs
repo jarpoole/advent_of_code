@@ -6,7 +6,7 @@ fn git_repo_has_uncommitted_changes(repo: &Repository) -> Result<bool, git2::Err
     Ok(repo
         .statuses(Some(&mut options))?
         .iter()
-        .any(|file| file.status() == Status::CURRENT))
+        .any(|file| file.status() != Status::CURRENT))
 }
 
 fn main() {
