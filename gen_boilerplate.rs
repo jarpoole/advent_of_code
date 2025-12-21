@@ -75,7 +75,7 @@ fn main() {
 
     let repo = Repository::init(".").expect("should always be run in the repository root");
     if git_repo_has_uncommitted_changes(&repo).unwrap() {
-        //panic!("Repository should be clean before generating files")
+        panic!("Repository should be clean before generating files")
     }
 
     // create the parent directories if they don't already exist
