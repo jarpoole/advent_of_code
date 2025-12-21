@@ -2,6 +2,11 @@
 name = "advent_of_code"
 version = "0.1.0"
 edition = "2024"
+default-run = "gen_boilerplate"
+
+[[bin]]
+name = "gen_boilerplate"
+path = "gen_boilerplate.rs"
 
 [[bin]]
 name = "2025_1"
@@ -28,6 +33,7 @@ name = "2025_6"
 path = "2025/6/main.rs"
 
 [dependencies]
+git2 = "0.20.3"
 ndarray = "0.17.1"
 ndarray-conv = "0.6.0"
 reqwest = { version = "0.12.25", features = ["blocking"] }
