@@ -2,17 +2,22 @@ use git2::{Repository, Status, StatusOptions};
 use std::fs;
 use toml_edit::{ArrayOfTables, DocumentMut, Item, Table};
 
-const MAIN_RS_CONTENT: &str = r#"
-#[path = "../../helpers.rs"]
-mod helpers;
+fn get_main_rs_content(year: &str, day: &str) -> String {
+    return format!(
+        r#"
+        #[path = "../../helpers.rs"]
+        mod helpers;
 
-#[cfg(test)]
-mod tests;
+        #[cfg(test)]
+        mod tests;
 
-fn main() {
-    println!("hello world");
+        fn main() {{
+            let input = helpers::get_input({year}, {day}).unwrap();
+            println!("hello world");
+        }}
+        "#
+    );
 }
-"#;
 
 const TESTS_RS_CONTENT: &str = r#"
 static EXAMPLE_INPUT: &str = "";
@@ -84,7 +89,7 @@ fn main() {
 
     // write code files
     let main_rs_path = format!("{path}/main.rs");
-    fs::write(&main_rs_path, MAIN_RS_CONTENT).unwrap();
+    fs::write(&main_rs_path, get_main_rs_content(&year, &day)).unwrap();
     fs::write(format!("{path}/tests.rs"), TESTS_RS_CONTENT).unwrap();
 
     update_cargo_toml(Bin {
