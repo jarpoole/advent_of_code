@@ -18,6 +18,7 @@ fn parse_input(input: &str) -> Array2<u8> {
         }
         c => panic!("should never encounter char '{}' in the input", c),
     }));
+    // subtract the number of rows as each row adds one extra character for the newline
     let columns = (input.len() - rows) / rows;
     return array
         .into_shape_with_order((rows, columns))
