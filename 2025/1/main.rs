@@ -1,3 +1,5 @@
+// https://adventofcode.com/2025/day/1
+
 #[path = "../../helpers.rs"]
 mod helpers;
 

@@ -1,3 +1,5 @@
+// https://adventofcode.com/2025/day/3
+
 static EXAMPLE_INPUT: &str = r#"
     987654321111111
     811111111111119

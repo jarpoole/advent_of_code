@@ -1,3 +1,5 @@
+// https://adventofcode.com/2025/day/5
+
 static EXAMPLE_INPUT: &str = r#"
     3-5
     10-14

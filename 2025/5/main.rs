@@ -1,3 +1,5 @@
+// https://adventofcode.com/2025/day/5
+
 use std::{cmp, str};
 
 #[path = "../../helpers.rs"]

@@ -1,3 +1,5 @@
+// https://adventofcode.com/2025/day/6
+
 use std::{borrow::Borrow, str::Chars};
 
 use ndarray::{Array2, ArrayBase};

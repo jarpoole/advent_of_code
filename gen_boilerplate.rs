@@ -5,6 +5,8 @@ use toml_edit::{ArrayOfTables, DocumentMut, Item, Table};
 fn get_main_rs_content(year: &str, day: &str) -> String {
     return format!(
         r#"
+        // https://adventofcode.com/{year}/day/{day}
+
         #[path = "../../helpers.rs"]
         mod helpers;
 
@@ -19,21 +21,27 @@ fn get_main_rs_content(year: &str, day: &str) -> String {
     );
 }
 
-const TESTS_RS_CONTENT: &str = r#"
-static EXAMPLE_INPUT: &str = "";
+fn get_test_rs_content(year: &str, day: &str) -> String {
+    return format!(
+        r#"
+        // https://adventofcode.com/{year}/day/{day}
 
-use super::*;
+        static EXAMPLE_INPUT: &str = "";
 
-#[test]
-fn part1_example() {
-    assert_eq!(true, true);
+        use super::*;
+
+        #[test]
+        fn part1_example() {{
+            assert_eq!(true, true);
+        }}
+
+        #[test]
+        fn part2_example() {{
+            assert_eq!(true, true);
+        }}
+        "#
+    );
 }
-
-#[test]
-fn part2_example() {
-    assert_eq!(true, true);
-}
-"#;
 
 fn git_repo_has_uncommitted_changes(repo: &Repository) -> Result<bool, git2::Error> {
     let mut options = StatusOptions::new();
@@ -90,7 +98,7 @@ fn main() {
     // write code files
     let main_rs_path = format!("{path}/main.rs");
     fs::write(&main_rs_path, get_main_rs_content(&year, &day)).unwrap();
-    fs::write(format!("{path}/tests.rs"), TESTS_RS_CONTENT).unwrap();
+    fs::write(format!("{path}/tests.rs"), get_test_rs_content(&year, &day)).unwrap();
 
     update_cargo_toml(Bin {
         name: format!("{year}_{day}"),
