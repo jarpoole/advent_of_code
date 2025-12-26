@@ -6,6 +6,7 @@ default-run = "gen_boilerplate"
 
 [dependencies]
 git2 = "0.20.3"
+itertools = "0.14.0"
 ndarray = "0.17.1"
 ndarray-conv = "0.6.0"
 reqwest = { version = "0.12.25", features = ["blocking"] }
@@ -42,3 +43,7 @@ path = "./2025/6/main.rs"
 [[bin]]
 name = "2025_7"
 path = "./2025/7/main.rs"
+
+[[bin]]
+name = "2025_8"
+path = "./2025/8/main.rs"
