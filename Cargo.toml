@@ -5,6 +5,14 @@ edition = "2024"
 default-run = "gen_boilerplate"
 
 [dependencies]
+good_lp = { version = "1.14.2", default-features = false, features = [
+    "scip",
+    # In theory specifying the bundled option should allow this project to
+    # build without any external dependencies but in practice, bug
+    # https://github.com/rust-or/good_lp/issues/100 requires cbc to be installed
+    # anyways. Therefore, run `brew install cbc` for now...
+    "scip_bundled",
+] }
 git2 = "0.20.3"
 itertools = "0.14.0"
 ndarray = "0.17.1"
@@ -51,3 +59,7 @@ path = "./2025/8/main.rs"
 [[bin]]
 name = "2025_9"
 path = "./2025/9/main.rs"
+
+[[bin]]
+name = "2025_10"
+path = "./2025/10/main.rs"

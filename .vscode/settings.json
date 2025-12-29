@@ -7,5 +7,14 @@
   },
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
-  }
+  },
+  "cSpell.words": [
+    "conv",
+    "itertools",
+    "joltage",
+    "joltages",
+    "minimise",
+    "ndarray",
+    "scip"
+  ]
 }

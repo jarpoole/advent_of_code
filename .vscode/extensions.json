@@ -2,6 +2,7 @@
   "recommendations": [
     "rust-lang.rust-analyzer",
     "prettier.prettier-vscode",
-    "tamasfe.even-better-toml"
+    "tamasfe.even-better-toml",
+    "streetsidesoftware.code-spell-checker"
   ]
 }
