@@ -24,7 +24,7 @@
 | 9-2      |          |                                                |
 | 10-1     | ⭐       | system of linear diophantine modular equations |
 | 10-2     | ⭐       |                                                |
-| 11-1     |          |                                                |
+| 11-1     | ⭐       | pre-order stack-based graph traversal          |
 | 11-2     |          |                                                |
 | 12-1     |          |                                                |
 | 12-2     |          |                                                |
