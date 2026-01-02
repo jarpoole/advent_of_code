@@ -71,6 +71,8 @@ enum State<'a> {
     /// The current device (vertex) has been shown to have at least one path which
     /// includes one or more of the intermediate devices constraints
     SomeConstraintsSatisfied(u64, HashSet<Device<'a>>),
+    /// The current device (vertex) has not been show to be reachable by any paths
+    /// including any of the required device constraints yet
     NoConstraintsSatisfied(u64),
     /// The current device (vertex) has multiple input paths which each have been shown
     /// to include different device constraints. Thus no single path can ever include all
@@ -85,7 +87,7 @@ struct Visit<'a> {
 
 fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints) -> u64 {
     let mut stack = vec![constraints.to];
-    let mut visit_counts: HashMap<Device, (u64, Option<HashSet<Device>>)> = HashMap::new();
+    let mut visits: HashMap<Device, Visit> = HashMap::new();
     while let Some(device) = stack.pop() {
         let inputs = device_inputs.get(&device).expect(&format!(
             "all devices should be in the adjacency list including {:?}",
@@ -93,40 +95,52 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
         ));
 
         if device == constraints.from {
-            visit_counts.insert(device, (1, None));
+            visits.insert(
+                device,
+                Visit {
+                    count: 1,
+                    visited_constraints: None,
+                },
+            );
             continue;
         }
 
-        // When determining the visit count for any given node there are several possibilities
-        //  1. No input node paths include any of the desired nodes
-        //      ∴ visit count = sum all input visit counts
-        //  2. Exactly one input node path includes one or more desired nodes but not all of them
-        //      ∴ visit count = only this input node visit count
-        //  3. More than one input node path includes some of the desired nodes but not all of them
+        // The key idea when determining the visit count for a vertex is that because each vertex
+        // is guaranteed to be unique and the graph is acyclic, if different required constraints
+        // appear in separate input paths and the graph is acyclic, no path can contain both and
+        // therefore neither path should be counted
+        //
+        // Possibilities when analyzing the inputs for a vertex
+        //  1. No input vertex paths include any of the desired vertices
+        //      ∴ visit count = sum all input visit vertices
+        //  2. One or more input vertex path includes one or more of the SAME desired vertex but
+        //     not all of them
+        //      ∴ visit count = sum of only these input vertices
+        //  3. More than one input vertex path includes DIFFERENT desired vertices but not all of them
         //      ∴ visit count = 0
-        //  4. More than one input node path includes some of the desired nodes and some of the input
-        //     include all of them
-        //      ∴ visit count = only the input paths that include all the desired nodes
-        // This works because each node is guaranteed to be unique so if different required nodes
-        // appear in separate branches and the graph is acyclic then no path can contain both
+        //  4. More than one input vertex path includes some of the desired vertices
+        //     and some of the input include all of them
+        //      ∴ visit count = sum of only the input paths that include all the desired vertices
         let visit_count = inputs
             .iter()
-            .map(|input| visit_counts.get(input))
+            .map(|input| visits.get(input))
             .fold_while(State::NoConstraintsSatisfied(0), |acc, curr| match curr {
-                Some((current_input_visit_count, v)) => {
+                Some(current_input_visit) => {
                     match acc {
                         // check if one or more input paths already satisfy all constraints
                         State::AllConstraintsSatisfied(accumulated_visit_count) => {
-                            if let Some(current_visited_constraints) = v
+                            if let Some(current_visited_constraints) =
+                                &current_input_visit.visited_constraints
                                 && *current_visited_constraints == constraints.including
                             {
                                 // more than one input has paths which already fully satisfy constraints
                                 // so sum them
                                 return FoldWhile::Continue(State::AllConstraintsSatisfied(
-                                    accumulated_visit_count + current_input_visit_count,
+                                    accumulated_visit_count + current_input_visit.count,
                                 ));
                             } else {
-                                // discard the result if the current input paths
+                                // otherwise discard the paths from this input because they can
+                                // never include all the required constraints
                                 return FoldWhile::Continue(acc);
                             }
                         }
@@ -135,22 +149,28 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
                             accumulated_visit_count,
                             accumulated_visited_constraints,
                         ) => {
-                            if let Some(current_visited_constraints) = v
+                            // if an input satisfies all constraints then we no longer need to consider
+                            // any other input which does not also already satisfy all constraints
+                            if let Some(current_visited_constraints) =
+                                &current_input_visit.visited_constraints
                                 && *current_visited_constraints == constraints.including
                             {
                                 return FoldWhile::Continue(State::AllConstraintsSatisfied(
-                                    *current_input_visit_count,
+                                    current_input_visit.count,
                                 ));
-                            } else if let Some(current_visited_constraints) = v
+                            // if multiple paths each include the same partial constraints then sum
+                            } else if let Some(current_visited_constraints) =
+                                &current_input_visit.visited_constraints
                                 && *current_visited_constraints == accumulated_visited_constraints
                             {
                                 return FoldWhile::Continue(State::SomeConstraintsSatisfied(
-                                    accumulated_visit_count + current_input_visit_count,
+                                    accumulated_visit_count + current_input_visit.count,
                                     accumulated_visited_constraints,
                                 ));
                             // if multiple paths each have different partial constraints then neither can
                             // ever be completed
-                            } else if let Some(current_visited_constraints) = v
+                            } else if let Some(current_visited_constraints) =
+                                &current_input_visit.visited_constraints
                                 && *current_visited_constraints != accumulated_visited_constraints
                             {
                                 return FoldWhile::Continue(State::ConflictingConstraints);
@@ -163,27 +183,39 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
                                 ));
                             }
                         }
+                        // check if none of the input paths include any of the constraint vertices yet
                         State::NoConstraintsSatisfied(accumulated_visit_count) => {
-                            if let Some(current_visited_constraints) = v
+                            // if an input satisfies all constraints then we no longer need to consider
+                            // any other input which does not also already satisfy all constraints
+                            if let Some(current_visited_constraints) =
+                                &current_input_visit.visited_constraints
                                 && *current_visited_constraints == constraints.including
                             {
                                 return FoldWhile::Continue(State::AllConstraintsSatisfied(
-                                    *current_input_visit_count,
+                                    current_input_visit.count,
                                 ));
-                            } else if let Some(current_visited_constraints) = v {
+                            // if this is the first input whose paths include some but not all constraint
+                            // vertices, then switch states to ensure that if this occurs again for future
+                            // input we can check if they are the same constraint vertices and can be summed
+                            // of if they are different and everything needs to be discarded
+                            } else if let Some(current_visited_constraints) =
+                                &current_input_visit.visited_constraints
+                            {
                                 return FoldWhile::Continue(State::SomeConstraintsSatisfied(
-                                    *current_input_visit_count,
+                                    current_input_visit.count,
                                     current_visited_constraints.clone(),
                                 ));
+                                // otherwise because no input path includes any constraint vertices yet,
+                                // all input paths are still potentially valid so sum them
                             } else {
                                 return FoldWhile::Continue(State::NoConstraintsSatisfied(
-                                    *current_input_visit_count + accumulated_visit_count,
+                                    current_input_visit.count + accumulated_visit_count,
                                 ));
                             }
                         }
                         State::ConflictingConstraints => FoldWhile::Continue(acc),
                         State::MissingDependencies => {
-                            unimplemented!("fold while will always returns early")
+                            unreachable!("fold-while will always returns early")
                         }
                     }
                 }
@@ -193,38 +225,69 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
 
         match visit_count {
             State::AllConstraintsSatisfied(input_visit_counts) => {
-                visit_counts.insert(
+                visits.insert(
                     device,
-                    (input_visit_counts, Some(constraints.including.clone())),
+                    Visit {
+                        count: input_visit_counts,
+                        visited_constraints: Some(constraints.including.clone()),
+                    },
                 );
             }
             State::SomeConstraintsSatisfied(input_visit_counts, mut visited_constraints) => {
                 if constraints.including.contains(&device) {
                     visited_constraints.insert(device);
                 }
-                visit_counts.insert(device, (input_visit_counts, Some(visited_constraints)));
+                visits.insert(
+                    device,
+                    Visit {
+                        count: input_visit_counts,
+                        visited_constraints: Some(visited_constraints),
+                    },
+                );
             }
             State::NoConstraintsSatisfied(input_visit_counts) => {
                 if constraints.including.contains(&device) {
-                    visit_counts
-                        .insert(device, (input_visit_counts, Some(HashSet::from([device]))));
+                    visits.insert(
+                        device,
+                        Visit {
+                            count: input_visit_counts,
+                            visited_constraints: Some(HashSet::from([device])),
+                        },
+                    );
                 } else {
-                    visit_counts.insert(device, (input_visit_counts, None));
+                    visits.insert(
+                        device,
+                        Visit {
+                            count: input_visit_counts,
+                            visited_constraints: None,
+                        },
+                    );
                 }
             }
             State::ConflictingConstraints => {
-                visit_counts.insert(device, (0, None));
+                visits.insert(
+                    device,
+                    Visit {
+                        count: 0,
+                        visited_constraints: None,
+                    },
+                );
             }
             State::MissingDependencies => {
-                let unresolved_inputs = inputs
-                    .iter()
-                    .filter(|device| !visit_counts.contains_key(device));
+                // to guarantee that the dependencies are resolved next time this device is
+                // considered, we leverage a pre-order graph traversal. Given we are using a
+                // stack, this means we need to push the input dependent vertices on last so they
+                // will be considered first
+                let unresolved_inputs = inputs.iter().filter(|device| !visits.contains_key(device));
                 stack.push(device);
                 stack.extend(unresolved_inputs);
             }
         }
     }
-    return (*visit_counts.get(&constraints.to).expect("")).0;
+    return visits
+        .get(&constraints.to)
+        .map(|visit| visit.count)
+        .unwrap_or(0);
 }
 
 fn count_part1_paths(device_inputs: DeviceInputAdjacencyList) -> u64 {
