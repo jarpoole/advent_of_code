@@ -15,17 +15,12 @@ use super::*;
 
 #[test]
 fn part1_example() {
-    let red_tiles: Vec<RedTile> = get_red_tiles(EXAMPLE_INPUT).collect();
-    let max_rectangles = max_rectangles(&red_tiles);
-    assert_eq!(max_rectangle_area(&max_rectangles), 50);
+    let red_tiles = get_red_tiles(EXAMPLE_INPUT);
+    assert_eq!(max_rectangle_area(&red_tiles), 50);
 }
 
 #[test]
 fn part2_example() {
-    let red_tiles: Vec<RedTile> = get_red_tiles(EXAMPLE_INPUT).collect();
-    let max_rectangles = max_rectangles(&red_tiles);
-    assert_eq!(
-        max_red_or_green_rectangle_area(&max_rectangles, &red_tiles),
-        24
-    );
+    let red_tiles = get_red_tiles(EXAMPLE_INPUT);
+    assert_eq!(max_red_or_green_rectangle_area(&red_tiles), 24);
 }

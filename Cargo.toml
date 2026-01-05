@@ -19,6 +19,8 @@ ndarray = "0.17.1"
 ndarray-conv = "0.6.0"
 reqwest = { version = "0.12.25", features = ["blocking"] }
 toml_edit = "0.24.0"
+geo = "0.32.0"
+rayon = "1.11.0"
 
 [[bin]]
 name = "gen_boilerplate"
