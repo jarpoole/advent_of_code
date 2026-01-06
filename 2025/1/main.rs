@@ -55,7 +55,6 @@ impl Dial {
             self.exactly_zero_count += 1;
         }
         self.through_zero_count += raw_next_position.div_euclid(self.size).abs();
-
         if raw_next_position < 0 && self.position == 0 {
             self.through_zero_count -= 1;
         } else if raw_next_position >= 100 && next_position == 0 {
