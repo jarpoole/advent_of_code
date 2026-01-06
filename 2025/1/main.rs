@@ -6,58 +6,85 @@ mod helpers;
 #[cfg(test)]
 mod tests;
 
-struct State {
-    exactly_zero_count: u32, // part 1
-    zero_count: u32,         // part 2
-    position: u8,
-}
+#[derive(Debug)]
+struct Rotation(i32);
 
-impl State {
-    fn new() -> State {
-        State {
-            exactly_zero_count: 0,
-            zero_count: 0,
-            position: 50,
-        }
+impl Rotation {
+    fn parse(input: &str) -> Option<Self> {
+        let direction_char = input.chars().nth(0)?;
+        let rotations = &input[1..].parse::<i32>().ok()?;
+        let direction = match direction_char {
+            'R' => 1,
+            'L' => -1,
+            _ => return None,
+        };
+        Some(Rotation(direction * rotations))
     }
 }
 
-fn simulate_dial_position(input: &str) -> State {
-    return input.split("\n").map(|line| line.trim()).fold(
-        State::new(),
-        |mut accumulator, current| {
-            if let Some(direction_char) = current.chars().nth(0)
-                && let Ok(rotations) = &current[1..].parse::<i32>()
-            {
-                let direction = match direction_char {
-                    'R' => 1,
-                    'L' => -1,
-                    _ => 0,
-                };
-                let next_position = (direction * rotations) + accumulator.position as i32;
-                accumulator.zero_count += next_position.div_euclid(100).abs() as u32;
-                if next_position < 0 && accumulator.position == 0 {
-                    accumulator.zero_count -= 1;
-                }
-                accumulator.position = next_position.rem_euclid(100) as u8;
-                if accumulator.position == 0 {
-                    accumulator.exactly_zero_count += 1;
-                }
-                println!(
-                    "pos={}, count={}",
-                    accumulator.position, accumulator.zero_count
-                );
-            }
-            return accumulator;
-        },
-    );
+// use signed integers even though none of these values can be negative because
+// it ensures the arithmetic can be performed without casting
+struct Dial {
+    /// the number of ticks on the dial (with values from 0 to size-1)
+    size: i32,
+    /// the number of times the dial lands on exactly 0
+    exactly_zero_count: i32,
+    /// the number of times the dial passes through 0 without stopping
+    through_zero_count: i32,
+    /// the current position of the dial
+    position: i32,
 }
 
-fn get_part1_password(input: &str) -> u32 {
+impl Dial {
+    fn new(size: i32) -> Self {
+        Dial {
+            size,
+            exactly_zero_count: 0,
+            through_zero_count: 0,
+            position: 50,
+        }
+    }
+
+    fn rotate(&mut self, rotation: &Rotation) {
+        // compute next position
+        let raw_next_position = rotation.0 + self.position;
+        let next_position = raw_next_position.rem_euclid(self.size);
+
+        // update tracking data
+        if next_position == 0 {
+            self.exactly_zero_count += 1;
+        }
+        self.through_zero_count += raw_next_position.div_euclid(self.size).abs();
+
+        if raw_next_position < 0 && self.position == 0 {
+            self.through_zero_count -= 1;
+        } else if raw_next_position >= 100 && next_position == 0 {
+            self.through_zero_count -= 1;
+        }
+
+        // update position
+        self.position = next_position;
+    }
+}
+
+fn simulate_dial_position(input: &str) -> Dial {
+    let mut state = Dial::new(100);
+    input
+        .split_whitespace()
+        .filter_map(|line| {
+            (!line.is_empty())
+                .then_some(Rotation::parse(line.trim()).expect(&format!("{line} should parse")))
+        })
+        .for_each(|rotation| state.rotate(&rotation));
+    return state;
+}
+
+fn get_part1_password(input: &str) -> i32 {
     return simulate_dial_position(input).exactly_zero_count;
 }
-fn get_part2_password(input: &str) -> u32 {
-    return simulate_dial_position(input).zero_count;
+fn get_part2_password(input: &str) -> i32 {
+    let result = simulate_dial_position(input);
+    return result.exactly_zero_count + result.through_zero_count;
 }
 
 fn main() {
