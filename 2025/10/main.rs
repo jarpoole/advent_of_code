@@ -56,7 +56,7 @@ impl Machine {
                     .map(|joltage| {
                         joltage
                             .parse::<u32>()
-                            .expect(&format!("failed to parse joltage {joltage}"))
+                            .unwrap_or_else(|_| panic!("failed to parse joltage {joltage}"))
                     }),
             ),
             buttons: Vec::from_iter(iter.map(|s| {
@@ -65,7 +65,7 @@ impl Machine {
                     .map(|indicator| {
                         indicator
                             .parse::<usize>()
-                            .expect(&format!("failed to parse indicator {indicator}"))
+                            .unwrap_or_else(|_| panic!("failed to parse indicator {indicator}"))
                     })
                     .collect::<Vec<_>>()
             })),
@@ -141,16 +141,12 @@ fn minimum_button_presses_to_enable(machine: &Machine) -> u32 {
         .using(scip::scip)
         .with_all(constraints)
         .solve()
-        .expect(&format!(
-            "failed to find solution for machine {}",
-            machine.number
-        ));
+        .unwrap_or_else(|_| panic!("failed to find solution for machine {}", machine.number));
 
-    let minimum_button_presses = variables
+    variables
         .iter()
         .map(|&v| solution.value(v).round() as u32)
-        .sum();
-    return minimum_button_presses;
+        .sum()
 }
 
 // see "minimum_button_presses_to_enable"
@@ -180,16 +176,12 @@ fn minimum_button_presses_to_power(machine: &Machine) -> u32 {
         .using(scip::scip)
         .with_all(constraints)
         .solve()
-        .expect(&format!(
-            "failed to find solution for machine {}",
-            machine.number
-        ));
+        .unwrap_or_else(|_| panic!("failed to find solution for machine {}", machine.number));
 
-    let minimum_button_presses = variables
+    variables
         .iter()
         .map(|&v| solution.value(v).round() as u32)
-        .sum();
-    return minimum_button_presses;
+        .sum()
 }
 
 fn parse_machines(input: &str) -> impl Iterator<Item = Machine> + Clone {

@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 default-run = "gen_boilerplate"
 
+[lints.clippy]
+cast_lossless = "deny"
+
 [dependencies]
 good_lp = { version = "1.14.2", default-features = false, features = [
     "scip",
@@ -69,3 +72,7 @@ path = "./2025/10/main.rs"
 [[bin]]
 name = "2025_11"
 path = "./2025/11/main.rs"
+
+[[bin]]
+name = "2025_12"
+path = "./2025/12/main.rs"

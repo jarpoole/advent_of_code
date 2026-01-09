@@ -37,11 +37,11 @@ impl TachyonManifold {
             c => panic!("should never encounter char '{}' in the input", c),
         }));
         let columns = (string.len() - rows) / rows;
-        return TachyonManifold(
+        TachyonManifold(
             array
                 .into_shape_with_order((rows, columns))
                 .expect("calculated dimensions should always match data"),
-        );
+        )
     }
 
     fn simulate(&mut self) -> TachyonSimulationResult {
@@ -122,11 +122,10 @@ impl TachyonManifold {
             .0
             .rows()
             .into_iter()
-            .rev()
-            .next()
+            .next_back()
             .map(|row| row.into_iter())
             .expect("tachyon manifold should always have a non-zero number of rows");
-        return TachyonSimulationResult {
+        TachyonSimulationResult {
             num_beam_splits,
             num_timelines: manifold_output_row
                 .filter_map(|cell| match cell {
@@ -134,7 +133,7 @@ impl TachyonManifold {
                     _ => None,
                 })
                 .sum(),
-        };
+        }
     }
 }
 

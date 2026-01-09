@@ -25,7 +25,7 @@ impl Operator {
         }
     }
 
-    fn apply<'a, T: IntoIterator<Item = impl Borrow<u64>>>(&self, numbers: T) -> u64 {
+    fn apply<T: IntoIterator<Item = impl Borrow<u64>>>(&self, numbers: T) -> u64 {
         match self {
             Self::Add => numbers.into_iter().fold(0, |mut accumulator, number| {
                 accumulator += number.borrow();
@@ -60,11 +60,10 @@ impl<'a> Iterator for ProblemIterator<'a> {
         let operator = Operator::new(
             self.row_iterators
                 .last_mut()?
-                .filter(|c| !c.is_whitespace())
-                .next()?,
+                .find(|c| !c.is_whitespace())?,
         )?;
 
-        return Some(operator.apply(std::iter::from_fn(|| {
+        Some(operator.apply(std::iter::from_fn(|| {
             let next: u64 = self
                 .row_iterators
                 .iter_mut()
@@ -79,7 +78,7 @@ impl<'a> Iterator for ProblemIterator<'a> {
                 // rows
                 .filter_map(|row| match row.next()? {
                     ' ' => None,
-                    c => Some(c.to_digit(10)? as u64),
+                    c => Some(u64::from(c.to_digit(10)?)),
                 })
                 // use zip instead of .enumerate() to set the index type
                 // to u32 instead of usize
@@ -90,8 +89,8 @@ impl<'a> Iterator for ProblemIterator<'a> {
             // which, when parsed, will become 0. Therefore, when this
             // occurs we should stop iteration by returning None and
             // apply the previously parsed operator
-            return (next > 0).then_some(next);
-        })));
+            (next > 0).then_some(next)
+        })))
     }
 }
 
@@ -115,7 +114,7 @@ fn part1(input: &str) -> u64 {
         });
 
     let numbers_vec = rows
-        .map(|row| {
+        .flat_map(|row| {
             num_rows += 1;
             row.split_ascii_whitespace().map(|number| {
                 number
@@ -123,7 +122,6 @@ fn part1(input: &str) -> u64 {
                     .expect("non whitespace characters should always form valid integers because the operators were already removed above")
             })
         })
-        .flatten()
         .collect::<Vec<u64>>();
     let num_columns = numbers_vec.len() / num_rows;
     // It is not wasteful to collect into a vec above because
@@ -132,9 +130,9 @@ fn part1(input: &str) -> u64 {
         .into_shape_with_order((num_rows, num_columns))
         .expect("input should always be square");
 
-    return Iterator::zip(numbers.columns().into_iter(), operators)
+    Iterator::zip(numbers.columns().into_iter(), operators)
         .map(|(column, operator)| operator.apply(column))
-        .sum();
+        .sum()
 }
 
 fn part2(input: &str) -> u64 {

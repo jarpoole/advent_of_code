@@ -20,12 +20,12 @@ struct JunctionBox {
 impl JunctionBox {
     fn parse(s: &str, index: usize) -> Option<Self> {
         let mut coordinates = s.split(",");
-        return Some(JunctionBox {
+        Some(JunctionBox {
             x: coordinates.next()?.parse::<i64>().ok()?,
             y: coordinates.next()?.parse::<i64>().ok()?,
             z: coordinates.next()?.parse::<i64>().ok()?,
             index,
-        });
+        })
     }
 
     fn euclidean_distance(&self, other: &JunctionBox) -> i64 {
@@ -37,7 +37,7 @@ type AdjacencyList = HashMap<usize, Vec<usize>>;
 type AdjacentJunctionBoxes = (JunctionBox, JunctionBox, i64);
 
 fn get_all_graphs(adjacency_list: &AdjacencyList) -> Vec<HashSet<usize>> {
-    let mut candidate_starting_vertices = adjacency_list.keys().map(|k| *k).collect::<HashSet<_>>();
+    let mut candidate_starting_vertices = adjacency_list.keys().copied().collect::<HashSet<_>>();
     let mut graphs = Vec::new();
     while let Some(&starting_vertex) = candidate_starting_vertices.iter().next() {
         let mut stack = Vec::<usize>::from([starting_vertex]);
@@ -55,7 +55,7 @@ fn get_all_graphs(adjacency_list: &AdjacencyList) -> Vec<HashSet<usize>> {
         candidate_starting_vertices.retain(|vertex| !current_graph.contains(vertex));
         graphs.push(current_graph);
     }
-    return graphs;
+    graphs
 }
 
 fn junction_boxes(input: &str) -> impl Iterator<Item = JunctionBox> + Clone {
@@ -64,7 +64,8 @@ fn junction_boxes(input: &str) -> impl Iterator<Item = JunctionBox> + Clone {
         .filter_map(|line| (!line.is_empty()).then_some(line.trim()))
         .enumerate()
         .map(|(index, line)| {
-            JunctionBox::parse(line, index).expect(&format!("should parse '{line}' successfully"))
+            JunctionBox::parse(line, index)
+                .unwrap_or_else(|| panic!("should parse '{line}' successfully"))
         })
 }
 
@@ -76,13 +77,13 @@ fn closest_junction_boxes(
         .map(|(box_a, box_b)| (box_a, box_b, box_a.euclidean_distance(&box_b)))
         .collect::<Vec<_>>();
     edges.sort_by(|a, b| a.2.cmp(&b.2)); // sort is ascending by default
-    return edges;
+    edges
 }
 
 fn connect_junction_boxes(adjacency_list: &mut AdjacencyList, edge: &AdjacentJunctionBoxes) {
-    let vertex_a = adjacency_list.entry(edge.0.index).or_insert(Vec::new());
+    let vertex_a = adjacency_list.entry(edge.0.index).or_default();
     vertex_a.push(edge.1.index);
-    let vertex_b = adjacency_list.entry(edge.1.index).or_insert(Vec::new());
+    let vertex_b = adjacency_list.entry(edge.1.index).or_default();
     vertex_b.push(edge.0.index);
 }
 
@@ -109,12 +110,12 @@ fn get_fully_connecting_edge<'a>(
                 potential_num_graphs = num_graphs - 1;
                 return num_graphs == 1;
             }
-            return false;
+            false
         })
         .expect(
             "based on part2 description all junction boxes will become connected at some point",
         );
-    return *junction_boxes;
+    *junction_boxes
 }
 
 fn get_multiplied_size_of_largest_circuits<'a>(
@@ -126,14 +127,9 @@ fn get_multiplied_size_of_largest_circuits<'a>(
     });
 
     let mut graphs = get_all_graphs(&adjacency_list);
-    graphs.sort_by(|a, b| a.len().cmp(&b.len()));
-    let size_of_largest_graphs: usize = graphs
-        .iter()
-        .rev()
-        .take(3)
-        .map(|g| g.len())
-        .fold(1, |acc, curr| acc * curr);
-    return size_of_largest_graphs;
+    graphs.sort_by_key(|graph| graph.len());
+    let size_of_largest_graphs: usize = graphs.iter().rev().take(3).map(|g| g.len()).product();
+    size_of_largest_graphs
 }
 
 fn get_multiplied_fully_connecting_x_coordinates<'a>(

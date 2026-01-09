@@ -34,7 +34,7 @@ fn parse_device_inputs(input: &str) -> DeviceInputAdjacencyList<'_> {
                 iter.next()
                     .expect("the device name should always appear before the colon"),
             );
-            hashmap.entry(device).or_insert(Vec::new());
+            hashmap.entry(device).or_default();
             iter.next()
                 .expect(
                     "split should always return an empty string at a minimum after the delimiter",
@@ -48,7 +48,7 @@ fn parse_device_inputs(input: &str) -> DeviceInputAdjacencyList<'_> {
                         .or_insert(vec![device]);
                 });
         });
-    return hashmap;
+    hashmap
 }
 
 struct Constraints<'a> {
@@ -89,10 +89,12 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
     let mut stack = vec![constraints.to];
     let mut visits: HashMap<Device, Visit> = HashMap::new();
     while let Some(device) = stack.pop() {
-        let inputs = device_inputs.get(&device).expect(&format!(
-            "all devices should be in the adjacency list including {:?}",
-            device
-        ));
+        let inputs = device_inputs.get(&device).unwrap_or_else(|| {
+            panic!(
+                "all devices should be in the adjacency list including {:?}",
+                device
+            )
+        });
 
         if device == constraints.from {
             visits.insert(
@@ -135,13 +137,13 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
                             {
                                 // more than one input has paths which already fully satisfy constraints
                                 // so sum them
-                                return FoldWhile::Continue(State::AllConstraintsSatisfied(
+                                FoldWhile::Continue(State::AllConstraintsSatisfied(
                                     accumulated_visit_count + current_input_visit.count,
-                                ));
+                                ))
                             } else {
                                 // otherwise discard the paths from this input because they can
                                 // never include all the required constraints
-                                return FoldWhile::Continue(acc);
+                                FoldWhile::Continue(acc)
                             }
                         }
                         // check if one or more input paths satisfy some of the constraints
@@ -155,32 +157,32 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
                                 &current_input_visit.visited_constraints
                                 && *current_visited_constraints == constraints.including
                             {
-                                return FoldWhile::Continue(State::AllConstraintsSatisfied(
+                                FoldWhile::Continue(State::AllConstraintsSatisfied(
                                     current_input_visit.count,
-                                ));
+                                ))
                             // if multiple paths each include the same partial constraints then sum
                             } else if let Some(current_visited_constraints) =
                                 &current_input_visit.visited_constraints
                                 && *current_visited_constraints == accumulated_visited_constraints
                             {
-                                return FoldWhile::Continue(State::SomeConstraintsSatisfied(
+                                FoldWhile::Continue(State::SomeConstraintsSatisfied(
                                     accumulated_visit_count + current_input_visit.count,
                                     accumulated_visited_constraints,
-                                ));
+                                ))
                             // if multiple paths each have different partial constraints then neither can
                             // ever be completed
                             } else if let Some(current_visited_constraints) =
                                 &current_input_visit.visited_constraints
                                 && *current_visited_constraints != accumulated_visited_constraints
                             {
-                                return FoldWhile::Continue(State::ConflictingConstraints);
+                                FoldWhile::Continue(State::ConflictingConstraints)
                             // discard the current input as it can never be complete given it is missing
                             // at least one constraint other input paths have already passed through
                             } else {
-                                return FoldWhile::Continue(State::SomeConstraintsSatisfied(
+                                FoldWhile::Continue(State::SomeConstraintsSatisfied(
                                     accumulated_visit_count,
                                     accumulated_visited_constraints.clone(),
-                                ));
+                                ))
                             }
                         }
                         // check if none of the input paths include any of the constraint vertices yet
@@ -191,9 +193,9 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
                                 &current_input_visit.visited_constraints
                                 && *current_visited_constraints == constraints.including
                             {
-                                return FoldWhile::Continue(State::AllConstraintsSatisfied(
+                                FoldWhile::Continue(State::AllConstraintsSatisfied(
                                     current_input_visit.count,
-                                ));
+                                ))
                             // if this is the first input whose paths include some but not all constraint
                             // vertices, then switch states to ensure that if this occurs again for future
                             // input we can check if they are the same constraint vertices and can be summed
@@ -201,16 +203,16 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
                             } else if let Some(current_visited_constraints) =
                                 &current_input_visit.visited_constraints
                             {
-                                return FoldWhile::Continue(State::SomeConstraintsSatisfied(
+                                FoldWhile::Continue(State::SomeConstraintsSatisfied(
                                     current_input_visit.count,
                                     current_visited_constraints.clone(),
-                                ));
+                                ))
                                 // otherwise because no input path includes any constraint vertices yet,
                                 // all input paths are still potentially valid so sum them
                             } else {
-                                return FoldWhile::Continue(State::NoConstraintsSatisfied(
+                                FoldWhile::Continue(State::NoConstraintsSatisfied(
                                     current_input_visit.count + accumulated_visit_count,
-                                ));
+                                ))
                             }
                         }
                         State::ConflictingConstraints => FoldWhile::Continue(acc),
@@ -284,10 +286,10 @@ fn count_paths(device_inputs: DeviceInputAdjacencyList, constraints: Constraints
             }
         }
     }
-    return visits
+    visits
         .get(&constraints.to)
         .map(|visit| visit.count)
-        .unwrap_or(0);
+        .unwrap_or(0)
 }
 
 fn count_part1_paths(device_inputs: DeviceInputAdjacencyList) -> u64 {

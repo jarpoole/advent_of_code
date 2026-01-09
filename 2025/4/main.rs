@@ -22,9 +22,9 @@ fn parse_input(input: &str) -> Array2<u8> {
     }));
     // subtract the number of rows as each row adds one extra character for the newline
     let columns = (input.len() - rows) / rows;
-    return array
+    array
         .into_shape_with_order((rows, columns))
-        .expect("calculated dimensions should always match data");
+        .expect("calculated dimensions should always match data")
 }
 
 fn get_num_directly_accessible_rolls(rolls: &Array2<u8>) -> (Array2<u8>, u32) {
@@ -47,9 +47,9 @@ fn get_num_directly_accessible_rolls(rolls: &Array2<u8>) -> (Array2<u8>, u32) {
         } else if i == 1 {
             num_removed += 1;
         }
-        return 0;
+        0
     });
-    return (remaining_rolls, num_removed);
+    (remaining_rolls, num_removed)
 }
 
 fn get_num_accessible_rolls(rolls: Array2<u8>) -> u32 {

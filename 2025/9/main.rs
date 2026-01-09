@@ -29,18 +29,18 @@ impl RedTile {
 type Rectangle = (RedTile, RedTile, i64);
 
 fn get_red_tiles(input: &str) -> Vec<RedTile> {
-    return input
+    input
         .split("\n")
         .filter_map(|line| (!line.is_empty()).then_some(line.trim()))
-        .map(|line| RedTile::parse(line).expect(&format!("{line} should parse")))
-        .collect();
+        .map(|line| RedTile::parse(line).unwrap_or_else(|| panic!("{line} should parse")))
+        .collect()
 }
 
 fn rectangle_area(corner1: &RedTile, corner2: &RedTile) -> i64 {
     // add one to each side length because a minimum sized rectangle where
     // both corners are the same point should still be considered to have
     // an area of 1 instead of 0
-    return ((corner1.x - corner2.x).abs() + 1) as i64 * ((corner1.y - corner2.y).abs() + 1) as i64;
+    i64::from((corner1.x - corner2.x).abs() + 1) * i64::from((corner1.y - corner2.y).abs() + 1)
 }
 
 fn max_rectangles<'a>(
@@ -48,8 +48,8 @@ fn max_rectangles<'a>(
 ) -> impl Iterator<Item = Rectangle> {
     red_tiles
         .tuple_combinations()
-        .map(|(a, b)| (*a, *b, rectangle_area(&a, &b)))
-        .sorted_by(|(_, _, a_area), (_, _, b_area)| a_area.cmp(&b_area))
+        .map(|(a, b)| (*a, *b, rectangle_area(a, b)))
+        .sorted_by(|(_, _, a_area), (_, _, b_area)| a_area.cmp(b_area))
         .rev()
 }
 
@@ -96,11 +96,11 @@ where
                     y: f64::from(corner2.y),
                 },
             );
-            return polygon.contains(&rectangle);
+            polygon.contains(&rectangle)
         });
-    return max_rectangle
+    max_rectangle
         .expect("should always find a rectangle that fits in the green area as this is what the problem asks for")
-        .2;
+        .2
 }
 
 fn main() {

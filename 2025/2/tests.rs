@@ -22,16 +22,18 @@ fn part2_example() {
 
 #[test]
 fn part2_invalid_ids() {
-    assert_eq!(is_invalid_id_part2("123123123"), true);
-    assert_eq!(is_invalid_id_part2("1111"), true);
-    assert_eq!(is_invalid_id_part2("68686868"), true);
-    assert_eq!(is_invalid_id_part2("22"), true);
-    assert_eq!(is_invalid_id_part2("333"), true);
-    assert_eq!(is_invalid_id_part2("453278453278"), true);
-    assert_eq!(is_invalid_id_part2("865865865865"), true);
-    assert_eq!(is_invalid_id_part2("700700"), true);
-    assert_eq!(is_invalid_id_part2("678906789067890"), true);
+    // invalid ids
+    assert!(is_invalid_id_part2("123123123"));
+    assert!(is_invalid_id_part2("1111"));
+    assert!(is_invalid_id_part2("68686868"));
+    assert!(is_invalid_id_part2("22"));
+    assert!(is_invalid_id_part2("333"));
+    assert!(is_invalid_id_part2("453278453278"));
+    assert!(is_invalid_id_part2("865865865865"));
+    assert!(is_invalid_id_part2("700700"));
+    assert!(is_invalid_id_part2("678906789067890"));
 
-    assert_eq!(is_invalid_id_part2("1"), false);
-    assert_eq!(is_invalid_id_part2("234"), false);
+    // valid ids
+    assert!(!is_invalid_id_part2("1"));
+    assert!(!is_invalid_id_part2("234"));
 }

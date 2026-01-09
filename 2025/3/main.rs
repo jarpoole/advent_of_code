@@ -35,9 +35,8 @@ fn get_max_bank_joltage(bank: &str, num_cells: u8) -> u64 {
         slice = &slice[result.0..slice.len()];
         buf.push(result.1);
     }
-    return buf
-        .parse::<u64>()
-        .expect("there should not be any non-digit characters in each input line");
+    buf.parse::<u64>()
+        .expect("there should not be any non-digit characters in each input line")
 }
 
 fn get_max_joltage(input: &str, num_cells: u8) -> u64 {

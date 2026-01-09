@@ -48,15 +48,15 @@ impl Range {
 
     /// computes the number of ingredient ids in the [`Range`]
     fn size(&self) -> u64 {
-        return self.upper - self.lower + 1;
+        self.upper - self.lower + 1
     }
 }
 
 fn count_available_fresh_ingredients<'a>(
-    ranges: &Vec<Range>,
+    ranges: &[Range],
     ingredients: impl Iterator<Item = &'a str>,
 ) -> u64 {
-    return ingredients.fold(0, |mut accumulator, ingredient_str| {
+    ingredients.fold(0, |mut accumulator, ingredient_str| {
         let ingredient = ingredient_str
             .parse::<u64>()
             .expect("ingredient ids should always be valid integers");
@@ -64,7 +64,7 @@ fn count_available_fresh_ingredients<'a>(
             accumulator += 1
         }
         accumulator
-    });
+    })
 }
 
 fn count_all_fresh_ingredients(mut ranges: Vec<Range>) -> u64 {
@@ -82,7 +82,7 @@ fn count_all_fresh_ingredients(mut ranges: Vec<Range>) -> u64 {
             // (and therefore strictly larger than the previous one) then keep it
             accumulator.push(*range);
         }
-        return accumulator;
+        accumulator
     });
     merged_ranges.iter().map(|range| range.size()).sum()
 }
@@ -97,7 +97,7 @@ fn parse_input(input: &str) -> (Vec<Range>, impl Iterator<Item = &str>) {
             let trimmed_str = ingredient_str.trim();
             (!trimmed_str.is_empty()).then_some(trimmed_str)
         })
-        .map(|range| Range::new(range))
+        .map(Range::new)
         .collect::<Vec<_>>();
 
     let ingredients = inputs
@@ -109,7 +109,7 @@ fn parse_input(input: &str) -> (Vec<Range>, impl Iterator<Item = &str>) {
             (!trimmed_str.is_empty()).then_some(trimmed_str)
         });
 
-    return (ranges, ingredients);
+    (ranges, ingredients)
 }
 
 fn main() {

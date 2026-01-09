@@ -55,9 +55,9 @@ impl Dial {
             self.exactly_zero_count += 1;
         }
         self.through_zero_count += raw_next_position.div_euclid(self.size).abs();
-        if raw_next_position < 0 && self.position == 0 {
-            self.through_zero_count -= 1;
-        } else if raw_next_position >= 100 && next_position == 0 {
+        if (raw_next_position < 0 && self.position == 0)
+            || (raw_next_position >= 100 && next_position == 0)
+        {
             self.through_zero_count -= 1;
         }
 
@@ -71,19 +71,20 @@ fn simulate_dial_position(input: &str) -> Dial {
     input
         .split_whitespace()
         .filter_map(|line| {
-            (!line.is_empty())
-                .then_some(Rotation::parse(line.trim()).expect(&format!("{line} should parse")))
+            (!line.is_empty()).then_some(
+                Rotation::parse(line.trim()).unwrap_or_else(|| panic!("{line} should parse")),
+            )
         })
         .for_each(|rotation| state.rotate(&rotation));
-    return state;
+    state
 }
 
 fn get_part1_password(input: &str) -> i32 {
-    return simulate_dial_position(input).exactly_zero_count;
+    simulate_dial_position(input).exactly_zero_count
 }
 fn get_part2_password(input: &str) -> i32 {
     let result = simulate_dial_position(input);
-    return result.exactly_zero_count + result.through_zero_count;
+    result.exactly_zero_count + result.through_zero_count
 }
 
 fn main() {

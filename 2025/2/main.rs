@@ -26,12 +26,7 @@ impl Range {
     }
     fn sum_invalid_ids(self, invalid_id_fn: InvalidIdFn, set: &mut HashSet<u64>) -> u64 {
         (self.lower..=self.upper)
-            .filter_map(|id| {
-                (!set.contains(&id) && invalid_id_fn(&id.to_string())).then(|| {
-                    set.insert(id);
-                    id
-                })
-            })
+            .filter(|id| !set.contains(id) && invalid_id_fn(&id.to_string()) && set.insert(*id))
             .sum()
     }
 }
@@ -43,7 +38,7 @@ fn find_invalid_ids(input: &str, invalid_id_fn: InvalidIdFn) -> u64 {
         .map(|range| {
             Range::new(range)
                 .map(|range| range.sum_invalid_ids(invalid_id_fn, &mut set))
-                .expect(format!("failed to parse '{}'", range).as_str())
+                .unwrap_or_else(|| panic!("failed to parse '{range}'"))
         })
         .sum()
 }
@@ -53,7 +48,7 @@ fn is_invalid_id_part1(id: &str) -> bool {
         return false;
     }
     let halves = id.split_at(id.len() / 2);
-    return halves.0 == halves.1;
+    halves.0 == halves.1
 }
 
 fn is_invalid_id_part2(id: &str) -> bool {
@@ -67,7 +62,7 @@ fn is_invalid_id_part2(id: &str) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 
 fn main() {
