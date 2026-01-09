@@ -3,7 +3,7 @@ use std::fs;
 use toml_edit::{ArrayOfTables, DocumentMut, Item, Table};
 
 fn get_main_rs_content(year: &str, day: &str) -> String {
-    return format!(
+    format!(
         r#"
         // https://adventofcode.com/{year}/day/{day}
 
@@ -18,11 +18,11 @@ fn get_main_rs_content(year: &str, day: &str) -> String {
             println!("hello world");
         }}
         "#
-    );
+    )
 }
 
 fn get_test_rs_content(year: &str, day: &str) -> String {
-    return format!(
+    format!(
         r#"
         // https://adventofcode.com/{year}/day/{day}
 
@@ -40,7 +40,7 @@ fn get_test_rs_content(year: &str, day: &str) -> String {
             assert_eq!(true, true);
         }}
         "#
-    );
+    )
 }
 
 fn git_repo_has_uncommitted_changes(repo: &Repository) -> Result<bool, git2::Error> {

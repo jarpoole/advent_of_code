@@ -11,11 +11,13 @@
   "rust-analyzer.check.command": "clippy",
   "cSpell.words": [
     "conv",
+    "dotenv",
     "itertools",
     "joltage",
     "joltages",
     "minimise",
     "ndarray",
+    "reqwest",
     "rsplit",
     "scip"
   ]

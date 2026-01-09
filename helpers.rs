@@ -32,10 +32,10 @@ fn get_page(url: &str) -> Result<String, Box<dyn Error>> {
         .error_for_status()?
         .text()?;
 
-    if let Ok(exists) = fs::exists(&cache_dir)
+    if let Ok(exists) = fs::exists(cache_dir)
         && !exists
     {
-        fs::create_dir(&cache_dir)?;
+        fs::create_dir(cache_dir)?;
     }
     fs::write(cache_filename, &data)?;
     Ok(data)
@@ -51,10 +51,10 @@ pub fn read_dotenv() -> Result<HashMap<String, String>, Box<dyn Error>> {
         .split("\n")
         .filter_map(|line| {
             let mut x = line.split("=");
-            return Option::zip(
-                x.nth(0).map(|s| s.to_owned()),
-                x.nth(0).map(|s| s.to_owned()),
-            );
+            Option::zip(
+                x.next().map(|s| s.to_owned()),
+                x.next().map(|s| s.to_owned()),
+            )
         })
         .collect::<HashMap<String, String>>())
 }
