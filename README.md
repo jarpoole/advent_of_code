@@ -2,32 +2,32 @@
 
 ## 2025
 
-| Day-Part | Complete | Notes                                          |
-| -------- | -------- | ---------------------------------------------- |
-| 1-1      | ⭐       | modular arithmetic                             |
-| 1-2      | ⭐       |                                                |
-| 2-1      | ⭐       |                                                |
-| 2-2      | ⭐       |                                                |
-| 3-1      | ⭐       |                                                |
-| 3-2      | ⭐       |                                                |
-| 4-1      | ⭐       |                                                |
-| 4-2      | ⭐       |                                                |
-| 5-1      | ⭐       | convolution with ndarray                       |
-| 5-2      | ⭐       |                                                |
-| 6-1      | ⭐       | column iteration with ndarray                  |
-| 6-2      | ⭐       | custom "problem" iterator                      |
-| 7-1      | ⭐       |                                                |
-| 7-2      | ⭐       |                                                |
-| 8-1      | ⭐       |                                                |
-| 8-2      | ⭐       |                                                |
-| 9-1      | ⭐       |                                                |
-| 9-2      | ⭐       | DE-9IM query with rayon parallelization        |
-| 10-1     | ⭐       | system of linear diophantine modular equations |
-| 10-2     | ⭐       |                                                |
-| 11-1     | ⭐       | pre-order stack-based graph traversal          |
-| 11-2     | ⭐       |                                                |
-| 12-1     |          |                                                |
-| 12-2     |          |                                                |
+| Day-Part | Complete | Notes                                                 |
+| -------- | -------- | ----------------------------------------------------- |
+| 1-1      | ⭐       | modular arithmetic                                    |
+| 1-2      | ⭐       |                                                       |
+| 2-1      | ⭐       |                                                       |
+| 2-2      | ⭐       |                                                       |
+| 3-1      | ⭐       |                                                       |
+| 3-2      | ⭐       |                                                       |
+| 4-1      | ⭐       |                                                       |
+| 4-2      | ⭐       |                                                       |
+| 5-1      | ⭐       | convolution with ndarray                              |
+| 5-2      | ⭐       |                                                       |
+| 6-1      | ⭐       | column iteration with ndarray                         |
+| 6-2      | ⭐       | custom "problem" iterator                             |
+| 7-1      | ⭐       |                                                       |
+| 7-2      | ⭐       |                                                       |
+| 8-1      | ⭐       |                                                       |
+| 8-2      | ⭐       |                                                       |
+| 9-1      | ⭐       |                                                       |
+| 9-2      | ⭐       | DE-9IM query with rayon parallelization               |
+| 10-1     | ⭐       | system of linear diophantine modular equations        |
+| 10-2     | ⭐       |                                                       |
+| 11-1     | ⭐       | pre-order stack-based graph traversal                 |
+| 11-2     | ⭐       |                                                       |
+| 12-1     | ⭐       | Major shortcut because general problem is NP-complete |
+| 12-2     | ⭐       | free extra star                                       |
 
 ## Setup
 

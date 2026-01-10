@@ -16,7 +16,9 @@
     "joltage",
     "joltages",
     "minimise",
+    "ncols",
     "ndarray",
+    "nrows",
     "reqwest",
     "rsplit",
     "scip"
