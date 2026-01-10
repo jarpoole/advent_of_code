@@ -40,10 +40,5 @@ use super::*;
 
 #[test]
 fn part1_example() {
-    assert_eq!(true, true);
-}
-
-#[test]
-fn part2_example() {
-    assert_eq!(true, true);
+    assert_eq!(count_solvable_regions(EXAMPLE_INPUT), 2);
 }

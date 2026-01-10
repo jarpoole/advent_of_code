@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use itertools::Itertools;
 use ndarray::prelude::*;
 
 #[path = "../../helpers.rs"]
@@ -9,6 +10,8 @@ mod helpers;
 
 #[cfg(test)]
 mod tests;
+
+static SHAPE_PERMUTATIONS: usize = 8;
 
 fn flip_matrix<T: Copy>(matrix: &Array2<T>) -> Array2<T> {
     let mut flipped = matrix.clone();
@@ -29,7 +32,7 @@ fn rotate_matrix_90_degrees_clockwise<T: Copy>(matrix: &Array2<T>) -> Array2<T> 
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct Present {
-    shapes: [Array2<bool>; 8],
+    shapes: [Array2<bool>; SHAPE_PERMUTATIONS],
     number: usize,
 }
 
@@ -44,7 +47,7 @@ impl Present {
         let shape: Vec<_> = iter
             .next()
             .expect("each present should have a multi-line shape after the colon")
-            .split("\n")
+            .split_whitespace()
             .flat_map(|line| {
                 cols = line.len();
                 line.chars().map(|c| match c {
@@ -96,9 +99,51 @@ impl Present {
     }
 }
 
+#[derive(Clone)]
+struct PresentPlacer<'a> {
+    present: &'a Present,
+    row: usize,
+    col: usize,
+    shape: usize,
+    max_row: usize,
+    max_col: usize,
+}
+
+impl<'a> PresentPlacer<'a> {
+    fn new(present: &'a Present, max_row: usize, max_col: usize) -> Self {
+        PresentPlacer {
+            present,
+            row: 0,
+            col: 0,
+            shape: 0,
+            max_row,
+            max_col,
+        }
+    }
+}
+
+impl Iterator for PresentPlacer<'_> {
+    type Item = (Array2<bool>, usize, usize);
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row + 3 > self.max_row {
+            return None;
+        }
+        let next_placement = (self.present.shapes[self.shape].clone(), self.row, self.col);
+        self.shape = (self.shape + 1) % SHAPE_PERMUTATIONS;
+        if self.shape == 0 {
+            self.col = (self.col + 1) % (self.max_col - 3 + 1);
+            if self.col == 0 {
+                self.row += 1;
+            }
+        }
+        Some(next_placement)
+    }
+}
+
 #[derive(Debug)]
 struct Region<'a> {
-    space: Array2<bool>,
+    rows: usize,
+    cols: usize,
     required_presents: HashMap<&'a Present, usize>,
 }
 
@@ -108,7 +153,8 @@ impl<'a> Region<'a> {
         let rows = iter.next().and_then(|s| s.parse::<usize>().ok()).expect("");
         let cols = iter.next().and_then(|s| s.parse::<usize>().ok()).expect("");
         Region {
-            space: Array2::from_elem((rows, cols), false),
+            rows,
+            cols,
             required_presents: iter
                 .filter(|s| !s.is_empty())
                 .enumerate()
@@ -123,7 +169,11 @@ impl<'a> Region<'a> {
         }
     }
 
-    // This problem is NP-complete so we need to find some sort of shortcut
+    // This problem is NP-complete so we need to take a shortcut for the full
+    // puzzle input in order to conclude for certain that there are no solutions
+    // for a given area. It turns out that the following two checks are sufficient
+    // and that the full solver is only required for the example input which is far
+    // smaller and can just be depth-first searched
     fn solve(&self) -> bool {
         // check if the presents could theoretically fit, ignoring packing
         let minimum_required_area: usize = self
@@ -131,7 +181,7 @@ impl<'a> Region<'a> {
             .iter()
             .map(|(present, number)| present.area() * number)
             .sum();
-        let available_area = self.space.len();
+        let available_area = self.rows * self.cols;
         if minimum_required_area > available_area {
             return false;
         }
@@ -144,13 +194,44 @@ impl<'a> Region<'a> {
             .fold((0, 0), |acc, curr| {
                 (usize::max(acc.0, curr.0), usize::max(acc.1, curr.1))
             });
-        let num_possible_presents = (self.space.len_of(Axis(0)) / minimum_present_bounds.0)
-            * (self.space.len_of(Axis(1)) / minimum_present_bounds.1);
+        let num_possible_presents =
+            (self.rows / minimum_present_bounds.0) * (self.cols / minimum_present_bounds.1);
         let num_required_presents: usize = self.required_presents.values().sum();
         if num_required_presents <= num_possible_presents {
             return true;
         }
-        unimplemented!("full intersecting solver");
+
+        // attempt to find a packed solution
+        let mut region_space = Array2::from_elem((self.rows, self.cols), false);
+        self.required_presents
+            .iter()
+            .flat_map(|(present, &present_count)| {
+                (0..present_count).map(|_| PresentPlacer::new(present, self.rows, self.cols))
+            })
+            .permutations(num_required_presents)
+            .any(|present_placers| {
+                present_placers
+                    .into_iter()
+                    .multi_cartesian_product()
+                    .any(|shapes| {
+                        //dbg!(&shapes);
+                        for (shape, row_offset, col_offset) in shapes {
+                            let mut slice = region_space.slice_mut(s![
+                                row_offset..row_offset + shape.nrows(),
+                                col_offset..col_offset + shape.ncols()
+                            ]);
+                            if slice.iter().map(|element| u32::from(*element)).sum::<u32>() != 0 {
+                                //println!("shapes overlap");
+                                return false; // shapes overlap
+                            };
+                            slice.assign(&shape);
+                        }
+                        // reset the temp buffer back to its starting state
+                        region_space.fill(false);
+                        true
+                    })
+            })
+        // unimplemented!("full intersecting solver");
     }
 }
 
